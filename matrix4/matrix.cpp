@@ -21,6 +21,32 @@ Matrix::Matrix(const int i, const int j){
     } 
 }
 
+Matrix::Matrix(string s, const int i, const int j){
+	ifstream plik;
+	
+	plik.open(s, ios::in);
+	double **tab = new double* [i];
+	int n=0;
+	for(int a=0; a < i; a++)
+		tab[a] = new double [j];
+	for(int a=0; a < i; a++)		
+		for(int b=0; b < j; b++){
+			plik >> tab[a][b];
+			++n;
+		}
+	plik.close();
+	try{
+		data = new rcmatrix(i, j, tab);
+		for(int a=0; a < i; a++)
+			delete [] tab[a];
+		delete [] tab;
+	}catch(const ErMake *s){
+		cout << "Blad tworzenia macierzy" << endl;
+	}
+}
+
+
+
 Matrix::~Matrix(){
     if(--data->licznik == 0)
         delete data;
@@ -93,10 +119,11 @@ Matrix& Matrix::operator+=(const Matrix &macierz){
           rcmatrix *newdata = new rcmatrix(i, j, data->dane);
           for(int a = 0; a < i; a++)
              for(int b = 0; b < j; b++)
-               newdata->dane[i][j] += macierz.data->dane[i][j];
+               newdata->dane[a][b] += macierz.data->dane[a][b];
 
-          if(--data->licznik == 0)
+          if(--data->licznik == 0){
             delete data;
+	  }          
           data = newdata;
 
           return *this;
@@ -104,7 +131,6 @@ Matrix& Matrix::operator+=(const Matrix &macierz){
 	  cout << "Blad tworzenia macierzy wynikowej" << endl;
 	  return *this;
         } 
-      
 }
 
 Matrix& Matrix::operator-=(const Matrix &macierz){
@@ -117,7 +143,7 @@ Matrix& Matrix::operator-=(const Matrix &macierz){
         rcmatrix *newdata = new rcmatrix(i, j, data->dane);
         for(int a = 0; a < i; a++)
             for(int b = 0; b < j; b++)
-               newdata->dane[i][j] -= macierz.data->dane[i][j];
+               newdata->dane[a][b] -= macierz.data->dane[a][b];
 
          if(--data->licznik == 0)
            delete data;
@@ -142,7 +168,7 @@ Matrix& Matrix::operator*=(const Matrix &macierz){
                 for(int b=0; b < macierz.data->kolumny; b++){
                     newdata->dane[a][b] = 0;
                     for(int r=0; r < j; r++)
-                        newdata->dane[a][b] += data->dane[i][r]*macierz.data->dane[r][j];
+                        newdata->dane[a][b] += data->dane[a][r]*macierz.data->dane[r][b];
                 }
 
        if(--data->licznik == 0)
@@ -194,25 +220,32 @@ Matrix::Cref Matrix::operator ()(int i, int j){
 	return Cref(*this, i, j);
 }
 
-Matrix& Matrix::wczytaj(const string s, int i, int j){
+Matrix& Matrix::wczytaj(const string s, const int i, const int j){
     ifstream plik;
     
-    double **tab = new(nothrow) double* [i];
-    if(tab == nullptr)
-       throw BadAlloc();
-    for(int a=0; a < i; a++){
-        tab[a] = new (nothrow) double [j];
-        if(tab[a] == nullptr)
-	   throw BadAlloc();
-    } 
+    double **tab = new double* [i];
+     for(int a=0; a < i; a++){
+        tab[a] = new double [j];
+  } 
     plik.open(s, ios::in);
        if( !plik.good() )
           throw FailedOpen() ;//blad;
-
-    for(int a=0; a < i; a++)
-       for(int b=0; b < j; b++)
-      //     fscanf (plik, "%lf", tab[i][j]);
-
+    
+   /* int n = 0;
+    int a = 0, b = 0
+    while(plik >> tab[a][b]){
+	if(++b >= j-1){
+	  b = 0;
+          ++a; 
+	}
+        ++n;
+        if(n >= i*j) // zabezpieczenie przed wczytaniem ponad rozmiar tablicy
+	   break;
+    }*/
+    int n = 0;
+    for(int a = 0; a <i; a++)
+       for(int b = 0; b < j && n < i*j; b++, n++)
+          plik >> tab[a][b];  
     plik.close();
     try{
       rcmatrix *newdata = new rcmatrix(i, j, tab);
@@ -220,7 +253,9 @@ Matrix& Matrix::wczytaj(const string s, int i, int j){
         delete data;
 
       data = newdata;
-
+      for(int a=0; a < i; a++)
+	delete [] tab[a];
+      delete [] tab;
       return *this; 
     }catch(ErMake *s){
       cout << "Blad tworzenia macierzy" << endl;

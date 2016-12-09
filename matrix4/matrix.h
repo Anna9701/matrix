@@ -24,6 +24,7 @@
             Matrix(int, int, double**);
             Matrix(const Matrix&);
             Matrix(const int, const int);
+	    Matrix(string, const int, const int);
             ~Matrix();
 
             Matrix& operator= (const Matrix &);
@@ -40,7 +41,7 @@
             bool operator== (const Matrix &) const;
             friend ostream& operator<< (ostream&, const Matrix &);
 
-            Matrix& wczytaj(const string, int, int);
+            Matrix& wczytaj(const string, const int, const int);
 
             double read (int, int) const;
             void write (int, int, double);

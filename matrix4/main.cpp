@@ -5,37 +5,24 @@
 
 
 int main(){
+   Matrix X(2, 2); 
+   Matrix C(X), B(C); 
+   
+   C(1, 0) = 2.43; 
+   X += C; 
+   B += X + C;
+   cout << "X\n" << X << "\nC\n" << C << "\nB\n" << B << endl;   
 
-    srand(time(NULL));
 
-    double **y = new double*[SIZE];
-    for(int i=0; i < SIZE; i++)
-        y[i] = new double[SIZE];
-    Matrix A(2, 2);
-    for(int i = 0; i < SIZE; i++)
-        for(int j=0; j < SIZE; j++){
-            y[i][j] = rand() % 400 / 2.34;
-            cout << y[i][j] << endl;
-        }
+Matrix N(2, 2);
+N.wczytaj("dane.txt", 2, 2);
+cout << N;
+Matrix test1 = N, test2 = N;
+Matrix test3("dane.txt", 2, 2);
+Matrix test4 = test1;
+Matrix test5 = test1;
+Matrix test6 = test2;
 
-   Matrix C(SIZE, SIZE, y);
-   cout << A;
-   cout << C;
-
-   Matrix B = C;
-
-   cout << B;
-   A = C;
-   cout << A;
-   double x = A(0, 1);
-   cout << x << endl;
-   B(0, 1) = 5.34;
-    cout << A;
-    cout << B;
-    for(int i=0; i < SIZE; i++)
-        delete [] y[i];
-    delete []y;
-    cout << "Matrix 0:2" << endl;
-    Matrix X(1, 1);
-    return 0;
+return 0;
 }
+
