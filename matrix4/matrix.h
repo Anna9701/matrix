@@ -13,8 +13,12 @@
             struct rcmatrix;
             rcmatrix* data;
         public:
-            class BadSize{};
 	    class ErMake{};
+	    class WrongData : ErMake{};
+	    class BadAlloc : ErMake{};
+            class WrongSizes{};
+	    class WrongIndex{};
+            class FailedOpen{};
             class Cref;
 
             Matrix(int, int, double**);
@@ -54,8 +58,7 @@
 
         rcmatrix(int i, int j, double** m){
             if(i < 1 || j < 1 || m == nullptr){
-		ErMake WrongData;
-		throw WrongData;
+		throw WrongData() ;
             }
 	    wiersze =  i;
             kolumny = j;
@@ -63,14 +66,12 @@
             licznik = 1;
             dane = new (nothrow) double* [wiersze];
 	    if(dane == nullptr){
-		ErMake BadAlloc;
-		throw BadAlloc;
+		throw BadAlloc() ;
 	    }
             for(int a=0; a < wiersze; a++){
                 dane[a] = new(nothrow) double[kolumny];
 		if(dane[a] == nullptr){
-			ErMake BadAlloc;
-			throw BadAlloc;
+			throw BadAlloc() ;
 		}
 	    }
             for(int x = 0; x < wiersze; x++)
@@ -79,19 +80,18 @@
         }
         rcmatrix(int i, int j){
             if(i < 1 || j < 1){
-		ErMake WrongData;
-		throw WrongData;
+		throw WrongData() ;
 	    }
 	    wiersze = i;
             kolumny = j;
             licznik = 1;
             dane = new (nothrow) double*[wiersze];
 	    if(dane == nullptr)
-		throw "Alloc Failed";
+		throw BadAlloc() ;
             for(int a=0; a < wiersze; a++){
                 dane[a] = new (nothrow) double[kolumny];
 		if(dane[a] == nullptr)
-			throw "Alloc Failed";
+			throw BadAlloc() ;
 	    }
             for(int x=0; x < wiersze; x++)
                 for(int y=0; y < kolumny; y++)
@@ -107,15 +107,25 @@
         rcmatrix* detach(){
             if(licznik==1)
                 return this;
+	    try{
             rcmatrix* n = new rcmatrix(wiersze, kolumny, dane);
             licznik--;
             return n;
+            }catch(const ErMake *s){
+		cout << "Blad rozlaczania macierzy" << endl;
+		return this;
+	    }
         }
-        void assign(int i, int j, double** m){
-            if(i != wiersze || j != kolumny){
-                double** nm = new double*[wiersze];
-                for(int a=0; a < wiersze; a++)
+       void assign (int i, int j, double **m){
+             if(i != wiersze || j != kolumny){
+                double** nm = new(nothrow) double*[wiersze];
+	        if(nm == nullptr)
+		   throw BadAlloc();
+                for(int a=0; a < wiersze; a++){
                     nm[a] = new double[kolumny];
+		    if(nm[a] == nullptr)
+			throw BadAlloc();
+		}
                 for(int x = 0; x < wiersze; x++)
                     for(int y=0; y < kolumny; y++)
                         nm[x][y] = m[x][y];
@@ -132,8 +142,7 @@
     private:
         rcmatrix(const rcmatrix&);
         rcmatrix& operator=(const rcmatrix&);
-    };
-
+    }; 			
     class Matrix::Cref{
         friend class Matrix;
         Matrix& m;
