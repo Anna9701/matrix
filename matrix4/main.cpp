@@ -35,7 +35,5 @@ int main(){
     for(int i=0; i < SIZE; i++)
         delete [] y[i];
     delete []y;
-    cout << "Matrix 0:2" << endl;
-    Matrix X(1, 1);
     return 0;
 }

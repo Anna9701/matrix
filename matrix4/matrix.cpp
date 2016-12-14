@@ -1,11 +1,7 @@
 #include "matrix.h"
 
 Matrix::Matrix(int i, int j, double** macierz){
-    try{
-      data = new rcmatrix(i, j, macierz);
-    }catch(const ErMake *s){
-      cout << "Blad tworzenia macierzy" << endl;
-    }
+    data = new rcmatrix(i, j, macierz);
 }
 
 Matrix::Matrix(const Matrix &macierz){
@@ -14,11 +10,7 @@ Matrix::Matrix(const Matrix &macierz){
 }
 
 Matrix::Matrix(const int i, const int j){
-    try{
-	data = new rcmatrix(i, j);
-    }catch (const ErMake *s){
-        cout << "Blad tworzenia macierzy" << endl;
-    } 
+    data = new rcmatrix(i, j);
 }
 
 Matrix::~Matrix(){
@@ -88,23 +80,19 @@ Matrix& Matrix::operator+=(const Matrix &macierz){
     int j = data->kolumny;
 
         if(i != macierz.data->wiersze || j != macierz.data->kolumny)
-          throw WrongSizes() ;//blad;
-	try{
-          rcmatrix *newdata = new rcmatrix(i, j, data->dane);
-          for(int a = 0; a < i; a++)
-             for(int b = 0; b < j; b++)
-               newdata->dane[i][j] += macierz.data->dane[i][j];
+            ;//blad;
+        rcmatrix *newdata = new rcmatrix(i, j, data->dane);
+            for(int a = 0; a < i; a++)
+                for(int b = 0; b < j; b++)
+                   newdata->dane[i][j] += macierz.data->dane[i][j];
 
-          if(--data->licznik == 0)
+
+        if(--data->licznik == 0)
             delete data;
-          data = newdata;
+        data = newdata;
 
-          return *this;
-        }catch(ErMake *s){
-	  cout << "Blad tworzenia macierzy wynikowej" << endl;
-	  return *this;
-        } 
-      
+        return *this;
+
 }
 
 Matrix& Matrix::operator-=(const Matrix &macierz){
@@ -112,22 +100,18 @@ Matrix& Matrix::operator-=(const Matrix &macierz){
     int j = data->kolumny;
 
     if(i != macierz.data->wiersze || j != macierz.data->kolumny)
-      throw WrongSizes()  ;//blad;
-    try{
-        rcmatrix *newdata = new rcmatrix(i, j, data->dane);
+        ;//blad;
+    rcmatrix *newdata = new rcmatrix(i, j, data->dane);
         for(int a = 0; a < i; a++)
             for(int b = 0; b < j; b++)
                newdata->dane[i][j] -= macierz.data->dane[i][j];
 
-         if(--data->licznik == 0)
-           delete data;
-         data = newdata;
 
-         return *this;
-    }catch(ErMake *s){
-	cout << "Blad tworzenia macierzy wynikowej" << endl;
-	return *this;
-    }    
+    if(--data->licznik == 0)
+        delete data;
+    data = newdata;
+
+    return *this;
 }
 
 Matrix& Matrix::operator*=(const Matrix &macierz){
@@ -135,26 +119,21 @@ Matrix& Matrix::operator*=(const Matrix &macierz){
     int j = data->kolumny;
 
     if(j!=macierz.data->wiersze)
-       throw WrongSizes() ;//blad
-    try{
-      rcmatrix *newdata = new rcmatrix(i, macierz.data->kolumny);
-      for(int a=0; a < i; a++)
+        ;//blad
+    rcmatrix *newdata = new rcmatrix(i, macierz.data->kolumny);
+        for(int a=0; a < i; a++)
                 for(int b=0; b < macierz.data->kolumny; b++){
                     newdata->dane[a][b] = 0;
                     for(int r=0; r < j; r++)
                         newdata->dane[a][b] += data->dane[i][r]*macierz.data->dane[r][j];
                 }
 
-       if(--data->licznik == 0)
-         delete data;
+    if(--data->licznik == 0)
+        delete data;
 
-       data = newdata;
+    data = newdata;
 
-       return *this;
-    }catch(ErMake *s){
-      cout << "Blad tworzenia macierzy wynikowej" << endl;
-      return *this;
-    }
+    return *this;
 }
 
 bool Matrix::operator== (const Matrix &macierz)const{
@@ -180,53 +159,40 @@ ostream& operator<< (ostream& os, const Matrix& macierz){
 
 double Matrix::operator ()(int i, int j)const{
     double x;
-    
-    if(i >data-> wiersze-1 || j >data-> kolumny-1 || i < 0 || j < 0)
-	throw WrongIndex();  
+
     x = data->dane[i][j];
 
     return x;
 }
 
 Matrix::Cref Matrix::operator ()(int i, int j){
-    	if(i > data->wiersze-1 || j >data->kolumny-1 || i < 0 || j < 0)
-		throw WrongIndex();
-	return Cref(*this, i, j);
+    return Cref(*this, i, j);
 }
 
 Matrix& Matrix::wczytaj(const string s, int i, int j){
     ifstream plik;
-    
-    double **tab = new(nothrow) double* [i];
-    if(tab == nullptr)
-       throw BadAlloc();
-    for(int a=0; a < i; a++){
-        tab[a] = new (nothrow) double [j];
-        if(tab[a] == nullptr)
-	   throw BadAlloc();
-    } 
+    double **tab = new double* [i];
+    for(int a=0; a < i; a++)
+        tab[a] = new double [j];
+
     plik.open(s, ios::in);
        if( !plik.good() )
-          throw FailedOpen() ;//blad;
+            ;//blad;
 
     for(int a=0; a < i; a++)
        for(int b=0; b < j; b++)
-      //     fscanf (plik, "%lf", tab[i][j]);
+           fscanf (plik, "%lf", tab[i][j]);
 
     plik.close();
-    try{
-      rcmatrix *newdata = new rcmatrix(i, j, tab);
-      if(--data->licznik == 0)
+
+    rcmatrix *newdata = new rcmatrix(i, j, tab);
+
+    if(--data->licznik == 0)
         delete data;
 
-      data = newdata;
+    data = newdata;
 
-      return *this; 
-    }catch(ErMake *s){
-      cout << "Blad tworzenia macierzy" << endl;
-      return *this;
-    } 
-    
+    return *this;
 }
 
 double Matrix::read(int i, int j)const{
